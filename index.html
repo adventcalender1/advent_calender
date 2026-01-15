@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sürpriz Kutularım 🎀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        /* --- GENEL AYARLAR & RENK PALETİ --- */
+        :root {
+            --bg-color: #fff0f5; /* Lavender Blush */
+            --box-color: #ffc1cc; /* Soft Pink */
+            --box-hover: #ffb7b2;
+            --text-color: #6d4c41;
+            --white: #ffffff;
+            --shadow: 0 10px 20px rgba(255, 183, 178, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#ffdeeb 20%, transparent 20%),
+                              radial-gradient(#ffdeeb 20%, transparent 20%);
+            background-position: 0 0, 50px 50px;
+            background-size: 100px 100px;
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 50px; /* Footer için boşluk */
+        }
+
+        /* Dekoratif Arkaplan Süsleri */
+        .decoration {
+            position: fixed;
+            font-size: 3rem;
+            opacity: 0.6;
+            z-index: -1;
+            animation: float 6s ease-in-out infinite;
+        }
+        .d1 { top: 5%; left: 5%; animation-delay: 0s; }
+        .d2 { top: 10%; right: 10%; animation-delay: 2s; }
+        .d3 { bottom: 15%; left: 8%; animation-delay: 1s; }
+        .d4 { bottom: 5%; right: 5%; animation-delay: 3s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #d8829d;
+            text-shadow: 2px 2px 0px #fff;
+        }
+
+        /* --- KUTU IZGARASI (GRID) --- */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Mobilde 2 sütun */
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        /* Tablet ve üzeri için 4 sütun */
+        @media (min-width: 768px) {
+            .calendar-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .box {
+            background: var(--white);
+            border-radius: 20px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            border: 4px solid var(--box-color);
+            overflow: hidden;
+        }
+
+        .box:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #ff9eaa;
+            box-shadow: 0 15px 30px rgba(255, 158, 170, 0.5);
+        }
+
+        .box-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--box-color);
+        }
+
+        .box-icon {
+            font-size: 1.5rem;
+            margin-top: 5px;
+        }
+
+        .box.opened {
+            background-color: #e8f5e9;
+            border-color: #a5d6a7;
+        }
+        .box.opened .box-number { color: #81c784; }
+
+        /* --- YENİ EKLENEN ALT SÖZ ALANI (FOOTER) --- */
+        .footer-note {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 20px 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 2px dashed #ffc1cc;
+            box-shadow: 0 5px 15px rgba(216, 130, 157, 0.2);
+            margin-top: 10px;
+        }
+
+        .footer-note p {
+            font-family: 'Pacifico', cursive;
+            color: #d8829d;
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        /* --- MODAL (POPUP) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 240, 245, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 3px dashed var(--box-color);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-family: 'Pacifico', cursive;
+            color: #d8829d;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+            color: #555;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--box-color);
+        }
+
+        button {
+            background: var(--box-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        button:hover {
+            background: #ff9eaa;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            color: #aaa;
+            font-size: 1.5rem;
+            padding: 0;
+            cursor: pointer;
+        }
+        
+        .close-btn:hover { background: none; color: #555; }
+
+        .hidden { display: none; }
+
+        .message-area {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+            background: #fff0f6;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .error-msg {
+            color: #e57373;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="decoration d1">🌸</div>
+    <div class="decoration d2">🧸</div>
+    <div class="decoration d3">🎀</div>
+    <div class="decoration d4">🌷</div>
+
+    <h1>✨ 8 Günlük Sürpriz ✨</h1>
+
+    <div class="calendar-grid" id="grid">
+        </div>
+
+    <div class="footer-note">
+        <p>"Mevsimler değişir, yıllar geçer ama bazı izler kalbe mühürlenir. Daima en güzel yerindesin."</p>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            
+            <div id="password-section">
+                <div class="modal-title">Şifreyi Gir 🔐</div>
+                <p style="margin-bottom:15px; font-size: 0.9rem;">Bu kutuyu açmak için bugünün şifresi lazım.</p>
+                <input type="text" id="pass-input" placeholder="Şifre..." autocomplete="off">
+                <button onclick="checkPassword()">Aç Bakalım</button>
+                <div class="error-msg" id="error-msg"></div>
+            </div>
+
+            <div id="message-section" class="hidden">
+                <div class="modal-title">Sürpriz! 🎉</div>
+                <div class="message-area" id="final-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFİGÜRASYON ALANI ---
+        // SÖZLER GÜNCELLENDİ
+        const boxData = [
+            { id: 1, pass: "090622", content: "Tesadüf seni önüme çıkarmasaydı, gene aynı şekilde, fakat her şeyden habersiz, yaşayıp gidecektim. Sen bana bir ruhum olduğunu öğrettin. (S. Ali)", icon: "📖" },
+            { id: 2, pass: "bal", content: "Bir bozuk saattir yüreğim, hep sende durur. Zamanın akmadığı yerdeyim.", icon: "🕰️" },
+            { id: 3, pass: "maya", content: "Şunu bilmelisin ki; yeryüzünde seni bir an olsun unutamayan biri var. Mesafeler kalbe engel değil. (Kafka)", icon: "💌" },
+            { id: 4, pass: "vily", content: "Seni durup dururken değil, aklımdan hiç çıkmazken seviyorum. (C. Süreya)", icon: "🌿" },
+            { id: 5, pass: "0402", content: "Seni düşünmek güzel şey, ümitli şey... Dünyanın en güzel sesinden şarkı dinlemek gibi. (Nazım)", icon: "🎶" },
+            { id: 6, pass: "2022", content: "Gülünü senin için bu kadar önemli kılan, ona harcadığın zamandır. Sen benim en güzel zamanımsın.", icon: "🌹" },
+            { id: 7, pass: "askiz", content: "Seni saklayacağım inan. Yazdıklarımda, sözlerimde... Hep sen kalacaksın. (Özdemir Asaf)", icon: "🔒" },
+            { id: 8, pass: "sonsuzluğa", content: "Hikayenin sonu ne olursa olsun; benim en güzel manzaram hep sen olacaksın. İyi ki geçtin hayatımdan.", icon: "❤️" }
+        ];
+
+        let currentBoxId = null;
+
+        const grid = document.getElementById('grid');
+        const modal = document.getElementById('modal');
+        const passInput = document.getElementById('pass-input');
+        const errorMsg = document.getElementById('error-msg');
+        const passwordSection = document.getElementById('password-section');
+        const messageSection = document.getElementById('message-section');
+        const finalMessage = document.getElementById('final-message');
+
+        // Kutuları Oluşturma
+        boxData.forEach(data => {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerHTML = `
+                <div class="box-number">${data.id}</div>
+                <div class="box-icon">🔒</div>
+            `;
+            box.onclick = () => openModal(data.id);
+            grid.appendChild(box);
+        });
+
+        // Modalı Aç
+        function openModal(id) {
+            currentBoxId = id;
+            modal.classList.add('active');
+            passInput.value = '';
+            errorMsg.textContent = '';
+            
+            passwordSection.classList.remove('hidden');
+            messageSection.classList.add('hidden');
+            passInput.focus();
+        }
+
+        // Modalı Kapat
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // Şifreyi Kontrol Et
+        function checkPassword() {
+            const enteredPass = passInput.value.trim(); 
+            const targetBox = boxData.find(b => b.id === currentBoxId);
+
+            if (enteredPass === targetBox.pass) {
+                // Şifre Doğru
+                passwordSection.classList.add('hidden');
+                messageSection.classList.remove('hidden');
+                finalMessage.textContent = targetBox.content;
+                
+                const gridBoxes = document.querySelectorAll('.box');
+                const boxDiv = gridBoxes[currentBoxId - 1];
+                boxDiv.classList.add('opened');
+                boxDiv.querySelector('.box-icon').textContent = targetBox.icon;
+            } else {
+                // Şifre Yanlış
+                errorMsg.textContent = "Ups! Şifre yanlış, tekrar dene. 🙈";
+            }
+        }
+
+        passInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkPassword();
+            }
+        });
+
+    </script>
+</body>
+</html>
